@@ -53,7 +53,7 @@ app.get('/', (req, res) => {
         html += `
         <div class="msg">
             <div class="code">${m.code}</div>
-            <small>${new Date(m.date).toLocaleTimeString()}</small>
+            <small>${new Date(m.date).toLocaleTimeString("hu-HU", { timeZone: "Europe/Budapest" })}</small>
         </div>
         `;
     });
