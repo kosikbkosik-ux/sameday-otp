@@ -46,7 +46,7 @@ app.get('/', (req, res) => {
     </style>
     </head>
     <body>
-    <h2>🔐 OTP KÓDOK</h2>
+    <h2>🔐 XIII. Gyűjtő OTP kód</h2>
     `;
 
     messages.forEach(m => {
