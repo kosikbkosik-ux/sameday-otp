@@ -80,7 +80,7 @@ app.get('/', (req, res) => {
     </head>
     <body>
 
-    <h2>OTP KÓDOK</h2>
+    <h2>Pickup gyűjtő OTP</h2>
 
     <div class="container">
     `;
