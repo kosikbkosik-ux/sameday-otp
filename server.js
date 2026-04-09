@@ -62,15 +62,17 @@ app.get('/', (req, res) => {
     }
 
     .code {
-        font-size: 40px;
-        color: #00ff99;
-        font-weight: bold;
-        cursor: pointer;
-    }
+    font-size: 40px;
+    color: #ffffff;
+    text-shadow: 0 0 8px rgba(255,255,255,0.5);
+    font-weight: bold;
+    cursor: pointer;
+}
 
     .msg:first-child .code {
-        font-size: 60px;
-    }
+    font-size: 60px;
+    color: #ffffff;
+}
 
     .time {
         font-size: 12px;
