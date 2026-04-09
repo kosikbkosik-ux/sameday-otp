@@ -41,13 +41,13 @@ app.get('/', (req, res) => {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
     body {
-        font-family: Arial;
-        background: #0f172a;
-        color: white;
-        margin: 0;
-        padding: 20px;
-        text-align: center;
-    }
+    font-family: Arial;
+    background: #000000;
+    color: white;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+}
 
     .container {
         max-width: 500px;
