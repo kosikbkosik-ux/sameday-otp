@@ -80,7 +80,6 @@ app.get('/', (req, res) => {
     </head>
     <body>
 
-    <img src="https://imgur.com/a/091e1AZ" style="width:80px;margin-bottom:10px;">
 <h2>Pickup gyűjtő OTP</h2>
 
     <div class="container">
