@@ -64,7 +64,6 @@ app.get('/', (req, res) => {
     .code {
     font-size: 40px;
     color: #ffffff;
-    text-shadow: 0 0 8px rgba(255,255,255,0.5);
     font-weight: bold;
     cursor: pointer;
 }
