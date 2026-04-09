@@ -80,7 +80,7 @@ app.get('/', (req, res) => {
     </head>
     <body>
 
-<h2 style="font-size:40px;">OTP</h2>
+<h2 style="font-size:40px;">Pickup OTP</h2>
 
     <div class="container">
     `;
