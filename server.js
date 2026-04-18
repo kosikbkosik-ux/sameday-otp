@@ -11,63 +11,77 @@ function extractCode(text) {
     return match ? match[0] : "";
 }
 
-// 🧠 KÖZPONTI KEZELÉS
-function handleMessage(rawText) {
+// 🧠 DUPLIKÁCIÓ SZŰRÉS
+function isDuplicate(code) {
+    const now = Date.now();
+
+    return messages.some(m =>
+        m.code === code &&
+        now - new Date(m.date).getTime() < 10000 // ⏱ 10 mp
+    );
+}
+
+// 📩 POST
+app.post('/sms', (req, res) => {
+    const rawText = req.body.message || req.body.text || "";
     const code = extractCode(rawText);
 
-    if (!code) {
-        console.log("NEM OTP, kihagyva");
-        return;
+    if (!code) return res.sendStatus(200);
+
+    if (isDuplicate(code)) {
+        console.log("DUPLIKÁLT, kihagyva:", code);
+        return res.sendStatus(200);
     }
 
     const msg = {
         code: code,
+        full: rawText,
         date: new Date(),
     };
 
     messages.unshift(msg);
     if (messages.length > 50) messages.pop();
-}
 
-// =======================
-// 📩 POST
-// =======================
-app.post('/sms', (req, res) => {
-    console.log("POST SMS MEGJÖTT");
-
-    const rawText = req.body.message || req.body.text || "";
-    handleMessage(rawText);
+    console.log("ÚJ OTP:", code);
 
     res.sendStatus(200);
 });
 
-// =======================
 // 📩 GET
-// =======================
 app.get('/sms', (req, res) => {
-    console.log("GET SMS MEGJÖTT");
-
     const rawText = req.query.message || "";
-    handleMessage(rawText);
+    const code = extractCode(rawText);
+
+    if (!code) return res.sendStatus(200);
+
+    if (isDuplicate(code)) {
+        console.log("DUPLIKÁLT (GET), kihagyva:", code);
+        return res.sendStatus(200);
+    }
+
+    const msg = {
+        code: code,
+        full: rawText,
+        date: new Date(),
+    };
+
+    messages.unshift(msg);
+    if (messages.length > 50) messages.pop();
 
     res.sendStatus(200);
 });
 
-// =======================
-// ❤️ HEALTH CHECK (EZ KÜLÖN VAN)
-// =======================
+// ❤️ HEALTH
 app.get('/health', (req, res) => {
-    res.send("OK");
-});
-app.get('/ping', (req, res) => {
-    console.log("🟢 CRON PING ÉRKEZETT");
     res.send("OK");
 });
 
 // 🧹 törlés 2 perc után
 setInterval(() => {
     const now = Date.now();
-    messages = messages.filter(m => now - new Date(m.date).getTime() < 2 * 60 * 1000);
+    messages = messages.filter(m =>
+        now - new Date(m.date).getTime() < 2 * 60 * 1000
+    );
 }, 10000);
 
 // 💬 UI
@@ -79,11 +93,10 @@ app.get('/', (req, res) => {
     <style>
     body {
         font-family: Arial;
-        background: #000000;
+        background: #000;
         color: white;
-        margin: 0;
-        padding: 20px;
         text-align: center;
+        padding: 20px;
     }
 
     .container {
