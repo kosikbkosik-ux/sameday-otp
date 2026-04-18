@@ -11,7 +11,7 @@ function extractCode(text) {
     return match ? match[0] : "";
 }
 
-// 🧠 KÖZPONTI KEZELÉS (EZ A LÉNYEG)
+// 🧠 KÖZPONTI KEZELÉS
 function handleMessage(rawText) {
     const code = extractCode(rawText);
 
@@ -26,7 +26,6 @@ function handleMessage(rawText) {
     };
 
     messages.unshift(msg);
-
     if (messages.length > 50) messages.pop();
 }
 
@@ -37,7 +36,6 @@ app.post('/sms', (req, res) => {
     console.log("POST SMS MEGJÖTT");
 
     const rawText = req.body.message || req.body.text || "";
-
     handleMessage(rawText);
 
     res.sendStatus(200);
@@ -50,11 +48,15 @@ app.get('/sms', (req, res) => {
     console.log("GET SMS MEGJÖTT");
 
     const rawText = req.query.message || "";
-
     handleMessage(rawText);
 
     res.sendStatus(200);
-    app.get('/health', (req, res) => {
+});
+
+// =======================
+// ❤️ HEALTH CHECK (EZ KÜLÖN VAN)
+// =======================
+app.get('/health', (req, res) => {
     res.send("OK");
 });
 
