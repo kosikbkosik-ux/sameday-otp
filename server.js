@@ -11,44 +11,47 @@ function extractCode(text) {
     return match ? match[0] : "";
 }
 
+// 🧠 KÖZPONTI KEZELÉS (EZ A LÉNYEG)
+function handleMessage(rawText) {
+    const code = extractCode(rawText);
+
+    if (!code) {
+        console.log("NEM OTP, kihagyva");
+        return;
+    }
+
+    const msg = {
+        code: code,
+        date: new Date(),
+    };
+
+    messages.unshift(msg);
+
+    if (messages.length > 50) messages.pop();
+}
+
 // =======================
-// 📩 SMS fogadás (POST)
+// 📩 POST
 // =======================
 app.post('/sms', (req, res) => {
     console.log("POST SMS MEGJÖTT");
 
     const rawText = req.body.message || req.body.text || "";
-    const code = extractCode(rawText) || rawText;
 
-    const msg = {
-        code: code,
-        full: rawText,
-        date: new Date(),
-    };
-
-    messages.unshift(msg);
-    if (messages.length > 50) messages.pop();
+    handleMessage(rawText);
 
     res.sendStatus(200);
 });
 
 // =======================
-// 📩 SMS fogadás (GET) 🔥 EZ KELL NEKED
+// 📩 GET
 // =======================
 app.get('/sms', (req, res) => {
     console.log("GET SMS MEGJÖTT");
 
     const rawText = req.query.message || "";
-    const code = extractCode(rawText) || rawText;
 
-    const msg = {
-        code: code,
-        full: rawText,
-        date: new Date(),
-    };
-
-    messages.unshift(msg);
-    if (messages.length > 50) messages.pop();
+    handleMessage(rawText);
 
     res.sendStatus(200);
 });
@@ -97,12 +100,6 @@ app.get('/', (req, res) => {
         font-size: 60px;
     }
 
-    .full {
-        font-size: 14px;
-        color: #aaa;
-        margin-top: 10px;
-    }
-
     .time {
         font-size: 12px;
         color: #666;
@@ -121,7 +118,6 @@ app.get('/', (req, res) => {
         html += `
         <div class="msg">
             <div class="code" onclick="copyCode('${m.code}')">${m.code}</div>
-            <div class="full">${m.full}</div>
             <div class="time">${new Date(m.date).toLocaleTimeString("hu-HU")}</div>
         </div>
         `;
