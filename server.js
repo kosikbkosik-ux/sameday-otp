@@ -13,8 +13,7 @@ function extractCode(text) {
 
 // 📩 SMS fogadás
 app.post('/sms', (req, res) => {
-    const rawText = req.body.text || "";
-
+    const rawText = req.body.message || "";
     const msg = {
         code: extractCode(rawText),
         date: new Date(),
