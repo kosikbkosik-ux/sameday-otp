@@ -7,8 +7,29 @@ let messages = [];
 
 // 🔢 KÓD KISZEDÉSE
 function extractCode(text) {
-    const match = text.match(/\d{4,8}/);
-    return match ? match[0] : "";
+    const lower = text.toLowerCase();
+
+    // ❌ ezek NEM OTP-k → dobjuk
+    if (
+        lower.includes("hívás") ||
+        lower.includes("hivas") ||
+        lower.includes("missed call") ||
+        lower.includes("nem fogadott")
+    ) {
+        return "";
+    }
+
+    // ✅ OTP kulcsszavak (csak ezeknél fogadjuk el)
+    if (
+        lower.includes("code") ||
+        lower.includes("otp") ||
+        lower.includes("authenticating")
+    ) {
+        const match = text.match(/\b\d{4,8}\b/);
+        return match ? match[0] : "";
+    }
+
+    return "";
 }
 
 // 🧠 DUPLIKÁCIÓ SZŰRÉS
