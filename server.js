@@ -19,12 +19,15 @@ app.post('/sms', (req, res) => {
 
     console.log("RAW TEXT:", rawText);
 
+    const code = extractCode(rawText) || rawText; // 🔥 EZ A LÉNYEG
+
+    console.log("KINYERT KÓD:", code);
+
     const msg = {
-        code: extractCode(rawText),
+        code: code,
+        full: rawText,
         date: new Date(),
     };
-
-    console.log("KINYERT KÓD:", msg.code);
 
     messages.unshift(msg);
 
@@ -47,13 +50,13 @@ app.get('/', (req, res) => {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
     body {
-    font-family: Arial;
-    background: #000000;
-    color: white;
-    margin: 0;
-    padding: 20px;
-    text-align: center;
-}
+        font-family: Arial;
+        background: #000000;
+        color: white;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+    }
 
     .container {
         max-width: 500px;
@@ -68,26 +71,32 @@ app.get('/', (req, res) => {
     }
 
     .code {
-    font-size: 40px;
-    color: #ffffff;
-    font-weight: bold;
-    cursor: pointer;
-}
+        font-size: 40px;
+        color: #ffffff;
+        font-weight: bold;
+        cursor: pointer;
+    }
 
     .msg:first-child .code {
-    font-size: 60px;
-    color: #ffffff;
-}
+        font-size: 60px;
+    }
+
+    .full {
+        font-size: 14px;
+        color: #aaa;
+        margin-top: 10px;
+    }
 
     .time {
         font-size: 12px;
-        color: #aaa;
+        color: #666;
+        margin-top: 5px;
     }
     </style>
     </head>
     <body>
 
-<h2 style="font-size:40px;">Pickup OTP</h2>
+    <h2 style="font-size:40px;">Pickup OTP</h2>
 
     <div class="container">
     `;
@@ -96,6 +105,7 @@ app.get('/', (req, res) => {
         html += `
         <div class="msg">
             <div class="code" onclick="copyCode('${m.code}')">${m.code}</div>
+            <div class="full">${m.full}</div>
             <div class="time">${new Date(m.date).toLocaleTimeString("hu-HU", { timeZone: "Europe/Budapest" })}</div>
         </div>
         `;
