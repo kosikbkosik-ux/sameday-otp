@@ -54,6 +54,8 @@ app.get('/sms', (req, res) => {
     handleMessage(rawText);
 
     res.sendStatus(200);
+    app.get('/health', (req, res) => {
+    res.send("OK");
 });
 
 // 🧹 törlés 2 perc után
