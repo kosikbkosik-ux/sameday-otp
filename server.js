@@ -59,6 +59,10 @@ app.get('/sms', (req, res) => {
 app.get('/health', (req, res) => {
     res.send("OK");
 });
+app.get('/ping', (req, res) => {
+    console.log("🟢 CRON PING ÉRKEZETT");
+    res.send("OK");
+});
 
 // 🧹 törlés 2 perc után
 setInterval(() => {
