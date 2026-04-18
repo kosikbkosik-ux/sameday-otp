@@ -119,4 +119,5 @@ app.get('/', (req, res) => {
     res.send(html);
 });
 
-app.listen(3000, () => console.log("Fut"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Fut a szerver:", PORT));
