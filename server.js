@@ -13,12 +13,18 @@ function extractCode(text) {
 
 // 📩 SMS fogadás
 app.post('/sms', (req, res) => {
-    const rawText = req.body.message || "";
+    console.log("TELJES BODY:", req.body);
+
+    const rawText = req.body.message || req.body.text || "";
+
+    console.log("RAW TEXT:", rawText);
 
     const msg = {
         code: extractCode(rawText),
         date: new Date(),
     };
+
+    console.log("KINYERT KÓD:", msg.code);
 
     messages.unshift(msg);
 
