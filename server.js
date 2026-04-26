@@ -160,7 +160,7 @@ app.get('/', (req, res) => {
         html += `
         <div class="msg">
             <div class="code" onclick="copyCode('${m.code}')">${m.code}</div>
-            <div class="time">${new Date(m.date).toLocaleTimeString("hu-HU")}</div>
+            <div class="time">${new Date(m.date).toLocaleTimeString("hu-HU", { timeZone: "Europe/Budapest" })}</div>
         </div>
         `;
     });
