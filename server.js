@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const crypto = require('crypto');
 
 app.use(express.json());
 
@@ -33,12 +34,13 @@ function extractCode(text) {
 }
 
 // 🧠 DUPLIKÁCIÓ SZŰRÉS
-function isDuplicate(code) {
+function isDuplicate(code, text) {
     const now = Date.now();
 
     return messages.some(m =>
         m.code === code &&
-        now - new Date(m.date).getTime() < 10000 // ⏱ 10 mp
+        m.full === text &&
+        now - new Date(m.date).getTime() < 10000
     );
 }
 
@@ -49,16 +51,16 @@ app.post('/sms', (req, res) => {
 
     if (!code) return res.sendStatus(200);
 
-    if (isDuplicate(code)) {
+    if (isDuplicate(code, rawText)) {
         console.log("DUPLIKÁLT, kihagyva:", code);
         return res.sendStatus(200);
     }
-
-    const msg = {
-        code: code,
-        full: rawText,
-        date: new Date(),
-    };
+const msg = {
+    id: crypto.randomUUID(),
+    code: code,
+    full: rawText,
+    date: new Date(),
+};
 
     messages.unshift(msg);
     if (messages.length > 50) messages.pop();
@@ -75,16 +77,17 @@ app.get('/sms', (req, res) => {
 
     if (!code) return res.sendStatus(200);
 
-    if (isDuplicate(code)) {
+    if (isDuplicate(code, rawText)) {
         console.log("DUPLIKÁLT (GET), kihagyva:", code);
         return res.sendStatus(200);
     }
 
     const msg = {
-        code: code,
-        full: rawText,
-        date: new Date(),
-    };
+    id: crypto.randomUUID(),
+    code: code,
+    full: rawText,
+    date: new Date(),
+};
 
     messages.unshift(msg);
     if (messages.length > 50) messages.pop();
@@ -158,7 +161,7 @@ app.get('/', (req, res) => {
 
     messages.forEach((m) => {
         html += `
-        <div class="msg">
+        <div class="msg" data-id="${m.id}">
             <div class="code" onclick="copyCode('${m.code}')">${m.code}</div>
             <div class="time">${new Date(m.date).toLocaleTimeString("hu-HU", { timeZone: "Europe/Budapest" })}</div>
         </div>
