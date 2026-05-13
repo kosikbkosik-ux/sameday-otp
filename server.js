@@ -6,11 +6,33 @@ app.use(express.json());
 
 let messages = [];
 
-// 🔢 KÓD KISZEDÉSE
+// 🔢 OTP KÓD KISZEDÉS + SPAM SZŰRÉS
 function extractCode(text) {
-    const lower = text.toLowerCase();
 
-    // ❌ ezek NEM OTP-k → dobjuk
+    if (!text) return "";
+
+    const lower = text.toLowerCase().trim();
+
+    // ❌ accessibility / UI spam
+    const blocked = [
+        "messages",
+        "compose",
+        "search",
+        "button",
+        "chat",
+        "new message",
+        "várakozás sms-re",
+        "sms forwarder",
+        "sensitive notification content hidden"
+    ];
+
+    for (const word of blocked) {
+        if (lower.includes(word)) {
+            return "";
+        }
+    }
+
+    // ❌ nem OTP jellegű
     if (
         lower.includes("hívás") ||
         lower.includes("hivas") ||
@@ -20,21 +42,45 @@ function extractCode(text) {
         return "";
     }
 
-    // ✅ OTP kulcsszavak (csak ezeknél fogadjuk el)
-    if (
-        lower.includes("code") ||
-        lower.includes("otp") ||
-        lower.includes("authenticating")
-    ) {
-        const match = text.match(/\b\d{4,8}\b/);
-        return match ? match[0] : "";
+    // ✅ OTP kulcsszavak
+    const otpKeywords = [
+        "code",
+        "otp",
+        "authenticating",
+        "verification",
+        "verify",
+        "pickup",
+        "courier",
+        "login",
+        "security"
+    ];
+
+    let hasOtpKeyword = false;
+
+    for (const keyword of otpKeywords) {
+        if (lower.includes(keyword)) {
+            hasOtpKeyword = true;
+            break;
+        }
     }
 
-    return "";
+    if (!hasOtpKeyword) {
+        return "";
+    }
+
+    // 🔢 4-8 számjegy keresés
+    const match = text.match(/\b\d{4,8}\b/);
+
+    if (!match) {
+        return "";
+    }
+
+    return match[0];
 }
 
 // 🧠 DUPLIKÁCIÓ SZŰRÉS
 function isDuplicate(code, text) {
+
     const now = Date.now();
 
     return messages.some(m =>
@@ -46,24 +92,35 @@ function isDuplicate(code, text) {
 
 // 📩 POST
 app.post('/sms', (req, res) => {
+
     const rawText = req.body.message || req.body.text || "";
+
+    console.log("RAW:", rawText);
+
     const code = extractCode(rawText);
 
-    if (!code) return res.sendStatus(200);
-
-    if (isDuplicate(code, rawText)) {
-        console.log("DUPLIKÁLT, kihagyva:", code);
+    if (!code) {
+        console.log("NEM OTP / SZŰRVE");
         return res.sendStatus(200);
     }
-const msg = {
-    id: crypto.randomUUID(),
-    code: code,
-    full: rawText,
-    date: new Date(),
-};
+
+    if (isDuplicate(code, rawText)) {
+        console.log("DUPLIKÁLT:", code);
+        return res.sendStatus(200);
+    }
+
+    const msg = {
+        id: crypto.randomUUID(),
+        code: code,
+        full: rawText,
+        date: new Date(),
+    };
 
     messages.unshift(msg);
-    if (messages.length > 50) messages.pop();
+
+    if (messages.length > 50) {
+        messages.pop();
+    }
 
     console.log("ÚJ OTP:", code);
 
@@ -72,25 +129,37 @@ const msg = {
 
 // 📩 GET
 app.get('/sms', (req, res) => {
+
     const rawText = req.query.message || "";
+
+    console.log("RAW GET:", rawText);
+
     const code = extractCode(rawText);
 
-    if (!code) return res.sendStatus(200);
+    if (!code) {
+        console.log("GET SZŰRVE");
+        return res.sendStatus(200);
+    }
 
     if (isDuplicate(code, rawText)) {
-        console.log("DUPLIKÁLT (GET), kihagyva:", code);
+        console.log("DUPLIKÁLT GET:", code);
         return res.sendStatus(200);
     }
 
     const msg = {
-    id: crypto.randomUUID(),
-    code: code,
-    full: rawText,
-    date: new Date(),
-};
+        id: crypto.randomUUID(),
+        code: code,
+        full: rawText,
+        date: new Date(),
+    };
 
     messages.unshift(msg);
-    if (messages.length > 50) messages.pop();
+
+    if (messages.length > 50) {
+        messages.pop();
+    }
+
+    console.log("ÚJ OTP GET:", code);
 
     res.sendStatus(200);
 });
@@ -100,21 +169,27 @@ app.get('/health', (req, res) => {
     res.send("OK");
 });
 
-// 🧹 törlés 2 perc után
+// 🧹 AUTO CLEAN
 setInterval(() => {
+
     const now = Date.now();
+
     messages = messages.filter(m =>
         now - new Date(m.date).getTime() < 2 * 60 * 1000
     );
+
 }, 10000);
 
 // 💬 UI
 app.get('/', (req, res) => {
+
     let html = `
     <html>
     <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <style>
+
     body {
         font-family: Arial;
         background: #000;
@@ -150,8 +225,10 @@ app.get('/', (req, res) => {
         color: #666;
         margin-top: 5px;
     }
+
     </style>
     </head>
+
     <body>
 
     <h2 style="font-size:40px;">Pickup OTP</h2>
@@ -160,10 +237,15 @@ app.get('/', (req, res) => {
     `;
 
     messages.forEach((m) => {
+
         html += `
         <div class="msg" data-id="${m.id}">
             <div class="code" onclick="copyCode('${m.code}')">${m.code}</div>
-            <div class="time">${new Date(m.date).toLocaleTimeString("hu-HU", { timeZone: "Europe/Budapest" })}</div>
+            <div class="time">
+                ${new Date(m.date).toLocaleTimeString("hu-HU", {
+                    timeZone: "Europe/Budapest"
+                })}
+            </div>
         </div>
         `;
     });
@@ -172,11 +254,13 @@ app.get('/', (req, res) => {
     </div>
 
     <script>
+
     function copyCode(text) {
         navigator.clipboard.writeText(text);
     }
 
     setTimeout(() => location.reload(), 2000);
+
     </script>
 
     </body>
@@ -187,4 +271,7 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Fut a szerver:", PORT));
+
+app.listen(PORT, () => {
+    console.log("Fut a szerver:", PORT);
+});
