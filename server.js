@@ -52,7 +52,7 @@ function extractCode(text) {
         "pickup",
         "courier",
         "login",
-        "security"
+        "security",
         "kód"
     ];
 
