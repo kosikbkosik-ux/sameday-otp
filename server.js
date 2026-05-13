@@ -53,6 +53,7 @@ function extractCode(text) {
         "courier",
         "login",
         "security"
+        "kód"
     ];
 
     let hasOtpKeyword = false;
@@ -68,14 +69,16 @@ function extractCode(text) {
         return "";
     }
 
-    // 🔢 4-8 számjegy keresés
-    const match = text.match(/\b\d{4,8}\b/);
 
-    if (!match) {
-        return "";
-    }
+// összes 4-8 számjegy keresése
+const matches = text.match(/\b\d{4,8}\b/g);
 
-    return match[0];
+if (!matches || matches.length === 0) {
+    return "";
+}
+
+// az utolsó szám lesz az OTP
+return matches[matches.length - 1];
 }
 
 // 🧠 DUPLIKÁCIÓ SZŰRÉS
