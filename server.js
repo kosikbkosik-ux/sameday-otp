@@ -10,76 +10,47 @@ let messages = [];
 
 // 🔢 OTP KÓD KISZEDÉS + SPAM SZŰRÉS (VÉGLEGES, HIBAMENTES)
 function extractCode(text) {
-    console.log("---- EXTRACT DEBUG START ----");
-    console.log("TEXT:", text);
+    if (!text) return "";
 
-    if (!text) {
-        console.log("NO TEXT");
-        console.log("---- EXTRACT DEBUG END ----");
-        return "";
-    }
-
-    const lower = text.toLowerCase().trim();
-    console.log("LOWER:", lower);
+    const lower = text.toLowerCase();
 
     const otpKeywords = [
-        "code",
-        "otp",
-        "authenticating",
-        "verification",
-        "verify",
-        "pickup",
-        "courier",
-        "login",
-        "security",
-        "kód"
+        "code", "otp", "authenticating", "verification",
+        "verify", "pickup", "courier", "login", "security", "kód"
     ];
 
-    const hasOtpKeyword = otpKeywords.some(k => lower.includes(k));
-    console.log("hasOtpKeyword:", hasOtpKeyword);
-    if (!hasOtpKeyword) {
-        console.log("NO KEYWORD → RETURN \"\"");
-        console.log("---- EXTRACT DEBUG END ----");
+    if (!otpKeywords.some(k => lower.includes(k))) {
         return "";
     }
 
+    // 🔥 minden nem szám karaktert szóközre cserélünk
     const cleaned = text.replace(/[^0-9]/g, " ");
-    console.log("CLEANED:", JSON.stringify(cleaned));
 
+    // 🔍 4–8 számjegy keresése
     const matches = cleaned.match(/\b\d{4,8}\b/g);
-    console.log("MATCHES:", matches);
-    if (!matches || matches.length === 0) {
-        console.log("NO MATCHES → RETURN \"\"");
-        console.log("---- EXTRACT DEBUG END ----");
-        return "";
-    }
+    if (!matches) return "";
 
-    const phonePattern = /\b(?:\+36|06)\s?\d{1,2}\s?\d{3}\s?\d{3,4}\b/;
-    const isPhone = phonePattern.test(text);
-    console.log("isPhone:", isPhone);
+    // 🔥 telefonszám normalizálása (szóközök eltávolítása)
+    const digitsOnly = text.replace(/\D/g, "");
+
+    // 🔥 magyar telefonszám minták normalizált formára
+    const phonePatternNormalized = /^(?:36|06)\d{8,9}$/;
+
+    const isPhone = phonePatternNormalized.test(digitsOnly);
 
     for (const num of matches) {
-        console.log("CHECK NUM:", num);
 
-        if (num.length < 4 || num.length > 8) {
-            console.log("  → LENGTH SKIP");
-            continue;
-        }
+        if (num.length < 4 || num.length > 8) continue;
 
-        if (isPhone && text.includes(num)) {
-            console.log("  → PHONE PART SKIP");
-            continue;
-        }
+        // ❌ ha a normalizált telefonszámban benne van → skip
+        if (isPhone && digitsOnly.includes(num)) continue;
 
-        console.log("  → RETURN NUM:", num);
-        console.log("---- EXTRACT DEBUG END ----");
         return num;
     }
 
-    console.log("NO VALID NUM → RETURN \"\"");
-    console.log("---- EXTRACT DEBUG END ----");
     return "";
 }
+
 
 // 🧠 DUPLIKÁCIÓ SZŰRÉS
 function isDuplicate(code, text) {
