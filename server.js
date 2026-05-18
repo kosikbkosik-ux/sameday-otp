@@ -38,15 +38,22 @@ function extractCode(text) {
 
     const isPhone = phonePatternNormalized.test(digitsOnly);
 
-    for (const num of matches) {
+    let best = "";
 
-        if (num.length < 4 || num.length > 8) continue;
+for (const num of matches) {
 
-        // ❌ ha a NORMALIZÁLT telefonszámban benne van → skip
-        if (isPhone && digitsOnly.includes(num)) continue;
+    if (num.length < 4 || num.length > 8) continue;
 
-        return num;
+    // telefonszám rész skip
+    if (isPhone && digitsOnly.includes(num)) continue;
+
+    // mindig a hosszabb szám nyer
+    if (num.length >= best.length) {
+        best = num;
     }
+}
+
+return best;
 
     return "";
 }
