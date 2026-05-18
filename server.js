@@ -1,4 +1,4 @@
-console.log("BACKEND VERSION:", "v3.2");
+console.log("BACKEND VERSION:", "v3.3");
 
 const express = require('express');
 const app = express();
@@ -73,22 +73,19 @@ function extractCode(text) {
         return "";
     }
 
-    // 🔥 magyar telefonszám felismerése (szóközökkel is)
+    // 🔥 magyar telefonszám felismerése (szóhatárral!)
     const phonePattern = /\b(?:\+36|06)\s?\d{1,2}\s?\d{3}\s?\d{3,4}\b/;
-
 
     const isPhone = phonePattern.test(text);
 
     // 🔥 végigmegyünk az összes találaton, és kiválasztjuk az első NEM telefonszám jellegűt
     for (const num of matches) {
 
-        // ha a szám maga túl hosszú → nem OTP
-        if (num.length > 8 || num.length < 4) continue;
+        if (num.length < 4 || num.length > 8) continue;
 
         // ❌ ha telefonszám része → skip
         if (isPhone && text.includes(num)) continue;
 
-        // ha idáig eljut → ez egy valódi OTP
         return num;
     }
 
@@ -191,7 +188,7 @@ app.get('/sms', (req, res) => {
 
 // ❤️ HEALTH
 app.get('/health', (req, res) => {
-    res.send("OK - version v3.2");
+    res.send("OK - version v3.3");
 });
 
 // 🧹 AUTO CLEAN
