@@ -23,7 +23,8 @@ function extractCode(text) {
         "new message",
         "várakozás sms-re",
         "sms forwarder",
-        "sensitive notification content hidden"
+        "sensitive notification content hidden",
+        "feldolgoztuk"
     ];
 
     for (const word of blocked) {
@@ -32,7 +33,7 @@ function extractCode(text) {
         }
     }
 
-    // ❌ nem OTP jellegű
+    // ❌ nem OTP jellegű (hívás, nem fogadott, stb.)
     if (
         lower.includes("hívás") ||
         lower.includes("hivas") ||
@@ -56,29 +57,44 @@ function extractCode(text) {
         "kód"
     ];
 
-    let hasOtpKeyword = false;
-
-    for (const keyword of otpKeywords) {
-        if (lower.includes(keyword)) {
-            hasOtpKeyword = true;
-            break;
-        }
-    }
-
+    let hasOtpKeyword = otpKeywords.some(k => lower.includes(k));
     if (!hasOtpKeyword) {
         return "";
     }
 
+    // 🔍 összes 4–8 számjegy keresése
+    const matches = text.match(/\b\d{4,8}\b/g);
+    if (!matches || matches.length === 0) {
+        return "";
+    }
 
-// összes 4-8 számjegy keresése
-const matches = text.match(/\b\d{4,8}\b/g);
+    // ❌ telefonszám minták kizárása
+    const phonePatterns = [
+        /\+?\d{7,15}/,            // teljes telefonszám
+        /\d{3}[-\s]?\d{3}[-\s]?\d{4}/,
+        /\(\d{3}\)\s*\d{3}-\d{4}/
+    ];
 
-if (!matches || matches.length === 0) {
+    // ❌ ha az egész üzenet tartalmaz telefonszámot → ne engedjük OTP-nek
+    const containsPhone = phonePatterns.some(p => p.test(text));
+
+    // 🔥 végigmegyünk az összes találaton, és kiválasztjuk az első NEM telefonszám jellegűt
+    for (const num of matches) {
+
+        // ha a szám maga túl hosszú → nem OTP
+        if (num.length > 8 || num.length < 4) continue;
+
+        // ha a szám része egy telefonszámnak → skip
+        if (containsPhone && text.includes(num)) {
+            continue;
+        }
+
+        // ha idáig eljut → ez egy valódi OTP
+        return num;
+    }
+
+    // ha minden szám telefonszám jellegű → nincs OTP
     return "";
-}
-
-// az utolsó szám lesz az OTP
-return matches[matches.length - 1];
 }
 
 // 🧠 DUPLIKÁCIÓ SZŰRÉS
