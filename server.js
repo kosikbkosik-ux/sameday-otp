@@ -40,22 +40,25 @@ function extractCode(text) {
 
     let best = "";
 
+let best = "";
+
 for (const num of matches) {
 
     if (num.length < 4 || num.length > 8) continue;
 
-    // telefonszám rész skip
+    // assignment ID skip
+    if (num.length <= 4) continue;
+
+    // telefonszám része skip
     if (isPhone && digitsOnly.includes(num)) continue;
 
-    // mindig a hosszabb szám nyer
+    // a hosszabb nyer
     if (num.length >= best.length) {
         best = num;
     }
 }
 
 return best;
-
-    return "";
 }
 
 
