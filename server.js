@@ -1,3 +1,5 @@
+console.log("BACKEND VERSION:", "v3.1");
+
 const express = require('express');
 const app = express();
 const crypto = require('crypto');
