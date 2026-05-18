@@ -42,7 +42,7 @@ function extractCode(text) {
 
         if (num.length < 4 || num.length > 8) continue;
 
-        // ❌ ha a normalizált telefonszámban benne van → skip
+        // ❌ ha a NORMALIZÁLT telefonszámban benne van → skip
         if (isPhone && digitsOnly.includes(num)) continue;
 
         return num;
@@ -50,6 +50,7 @@ function extractCode(text) {
 
     return "";
 }
+
 
 
 // 🧠 DUPLIKÁCIÓ SZŰRÉS
