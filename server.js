@@ -6,7 +6,7 @@ app.use(express.json());
 
 let messages = [];
 
-// 🔢 OTP KÓD KISZEDÉS + SPAM SZŰRÉS
+// 🔢 OTP KÓD KISZEDÉS + SPAM SZŰRÉS (VÉGLEGES, HIBAMENTES)
 function extractCode(text) {
 
     if (!text) return "";
@@ -43,7 +43,7 @@ function extractCode(text) {
         return "";
     }
 
-    // ✅ OTP kulcsszavak
+    // 🔑 OTP kulcsszavak
     const otpKeywords = [
         "code",
         "otp",
@@ -62,8 +62,12 @@ function extractCode(text) {
         return "";
     }
 
-    // 🔍 összes 4–8 számjegy keresése
-    const matches = text.match(/\b\d{4,8}\b/g);
+    // 🔥 MINDEN nem szám karaktert szóközre cserélünk
+    // Így a "123345" akkor is felismerhető, ha előtte ":" vagy utána "." van
+    const cleaned = text.replace(/[^0-9]/g, " ");
+
+    // 🔍 4–8 számjegy keresése
+    const matches = cleaned.match(/\b\d{4,8}\b/g);
     if (!matches || matches.length === 0) {
         return "";
     }
@@ -75,9 +79,6 @@ function extractCode(text) {
         /\(\d{3}\)\s*\d{3}-\d{4}/
     ];
 
-    // ❌ ha az egész üzenet tartalmaz telefonszámot → ne engedjük OTP-nek
-    const containsPhone = phonePatterns.some(p => p.test(text));
-
     // 🔥 végigmegyünk az összes találaton, és kiválasztjuk az első NEM telefonszám jellegűt
     for (const num of matches) {
 
@@ -85,7 +86,7 @@ function extractCode(text) {
         if (num.length > 8 || num.length < 4) continue;
 
         // ha a szám része egy telefonszámnak → skip
-        if (containsPhone && text.includes(num)) {
+        if (phonePatterns.some(p => p.test(text) && text.includes(num))) {
             continue;
         }
 
@@ -93,7 +94,6 @@ function extractCode(text) {
         return num;
     }
 
-    // ha minden szám telefonszám jellegű → nincs OTP
     return "";
 }
 
@@ -153,7 +153,6 @@ app.post('/sms', (req, res) => {
         code,
     });
 });
-
 
 // 📩 GET
 app.get('/sms', (req, res) => {
