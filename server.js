@@ -1,4 +1,4 @@
-console.log("BACKEND VERSION:", "v3.1");
+console.log("BACKEND VERSION:", "v3.2");
 
 const express = require('express');
 const app = express();
@@ -65,7 +65,6 @@ function extractCode(text) {
     }
 
     // 🔥 MINDEN nem szám karaktert szóközre cserélünk
-    // Így a "123345" akkor is felismerhető, ha előtte ":" vagy utána "." van
     const cleaned = text.replace(/[^0-9]/g, " ");
 
     // 🔍 4–8 számjegy keresése
@@ -74,12 +73,10 @@ function extractCode(text) {
         return "";
     }
 
-    // ❌ telefonszám minták kizárása
-    const phonePatterns = [
-        /\+?\d{7,15}/,            // teljes telefonszám
-        /\d{3}[-\s]?\d{3}[-\s]?\d{4}/,
-        /\(\d{3}\)\s*\d{3}-\d{4}/
-    ];
+    // 🔥 magyar telefonszám felismerése (szóközökkel is)
+    const phonePattern = /(?:\+36|06)\s?\d{1,2}\s?\d{3}\s?\d{3,4}/;
+
+    const isPhone = phonePattern.test(text);
 
     // 🔥 végigmegyünk az összes találaton, és kiválasztjuk az első NEM telefonszám jellegűt
     for (const num of matches) {
@@ -87,10 +84,8 @@ function extractCode(text) {
         // ha a szám maga túl hosszú → nem OTP
         if (num.length > 8 || num.length < 4) continue;
 
-        // ha a szám része egy telefonszámnak → skip
-        if (phonePatterns.some(p => p.test(text) && text.includes(num))) {
-            continue;
-        }
+        // ❌ ha telefonszám része → skip
+        if (isPhone && text.includes(num)) continue;
 
         // ha idáig eljut → ez egy valódi OTP
         return num;
@@ -195,7 +190,7 @@ app.get('/sms', (req, res) => {
 
 // ❤️ HEALTH
 app.get('/health', (req, res) => {
-    res.send("OK");
+    res.send("OK - version v3.2");
 });
 
 // 🧹 AUTO CLEAN
