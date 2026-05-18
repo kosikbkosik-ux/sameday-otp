@@ -39,8 +39,7 @@ function extractCode(text) {
     const isPhone = phonePatternNormalized.test(digitsOnly);
 
     let best = "";
-
-let best = "";
+let bestCode = "";
 
 for (const num of matches) {
 
@@ -52,13 +51,13 @@ for (const num of matches) {
     // telefonszám része skip
     if (isPhone && digitsOnly.includes(num)) continue;
 
-    // a hosszabb nyer
-    if (num.length >= best.length) {
-        best = num;
+    // hosszabb nyer
+    if (num.length >= bestCode.length) {
+        bestCode = num;
     }
 }
 
-return best;
+return bestCode;
 }
 
 
