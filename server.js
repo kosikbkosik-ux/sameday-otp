@@ -12,63 +12,37 @@ let messages = [];
 function extractCode(text) {
     if (!text) return "";
 
-    const lower = text.toLowerCase().trim();
-
-    const blocked = [
-        "messages",
-        "compose",
-        "search",
-        "button",
-        "chat",
-        "new message",
-        "várakozás sms-re",
-        "sms forwarder",
-        "sensitive notification content hidden",
-        "feldolgoztuk"
-    ];
-
-    for (const word of blocked) {
-        if (lower.includes(word)) return "";
-    }
-
-    if (
-        lower.includes("hívás") ||
-        lower.includes("hivas") ||
-        lower.includes("missed call") ||
-        lower.includes("nem fogadott")
-    ) {
-        return "";
-    }
+    const lower = text.toLowerCase();
 
     const otpKeywords = [
-        "code",
-        "otp",
-        "authenticating",
-        "verification",
-        "verify",
-        "pickup",
-        "courier",
-        "login",
-        "security",
-        "kód"
+        "code", "otp", "authenticating", "verification",
+        "verify", "pickup", "courier", "login", "security", "kód"
     ];
 
     if (!otpKeywords.some(k => lower.includes(k))) {
         return "";
     }
 
+    // 🔥 minden nem szám karaktert szóközre cserélünk
     const cleaned = text.replace(/[^0-9]/g, " ");
+
+    // 🔍 4–8 számjegy keresése
     const matches = cleaned.match(/\b\d{4,8}\b/g);
     if (!matches) return "";
 
+    // 🔥 telefonszám normalizálása (szóközök eltávolítása)
     const digitsOnly = text.replace(/\D/g, "");
+
+    // 🔥 magyar telefonszám minták normalizált formára
     const phonePatternNormalized = /^(?:36|06)\d{8,9}$/;
+
     const isPhone = phonePatternNormalized.test(digitsOnly);
 
     for (const num of matches) {
+
         if (num.length < 4 || num.length > 8) continue;
 
-        // ha a normalizált telefonszámban benne van → telefonszám része
+        // ❌ ha a NORMALIZÁLT telefonszámban benne van → skip
         if (isPhone && digitsOnly.includes(num)) continue;
 
         return num;
@@ -76,6 +50,7 @@ function extractCode(text) {
 
     return "";
 }
+
 
 function isDuplicate(code, text) {
     const now = Date.now();
