@@ -10,42 +10,18 @@ let messages = [];
 
 // 🔢 OTP KÓD KISZEDÉS + SPAM SZŰRÉS (VÉGLEGES, HIBAMENTES)
 function extractCode(text) {
+    console.log("---- EXTRACT DEBUG START ----");
+    console.log("TEXT:", text);
 
-    if (!text) return "";
-
-    const lower = text.toLowerCase().trim();
-
-    // ❌ accessibility / UI spam
-    const blocked = [
-        "messages",
-        "compose",
-        "search",
-        "button",
-        "chat",
-        "new message",
-        "várakozás sms-re",
-        "sms forwarder",
-        "sensitive notification content hidden",
-        "feldolgoztuk"
-    ];
-
-    for (const word of blocked) {
-        if (lower.includes(word)) {
-            return "";
-        }
-    }
-
-    // ❌ nem OTP jellegű (hívás, nem fogadott, stb.)
-    if (
-        lower.includes("hívás") ||
-        lower.includes("hivas") ||
-        lower.includes("missed call") ||
-        lower.includes("nem fogadott")
-    ) {
+    if (!text) {
+        console.log("NO TEXT");
+        console.log("---- EXTRACT DEBUG END ----");
         return "";
     }
 
-    // 🔑 OTP kulcsszavak
+    const lower = text.toLowerCase().trim();
+    console.log("LOWER:", lower);
+
     const otpKeywords = [
         "code",
         "otp",
@@ -59,36 +35,49 @@ function extractCode(text) {
         "kód"
     ];
 
-    let hasOtpKeyword = otpKeywords.some(k => lower.includes(k));
+    const hasOtpKeyword = otpKeywords.some(k => lower.includes(k));
+    console.log("hasOtpKeyword:", hasOtpKeyword);
     if (!hasOtpKeyword) {
+        console.log("NO KEYWORD → RETURN \"\"");
+        console.log("---- EXTRACT DEBUG END ----");
         return "";
     }
 
-    // 🔥 MINDEN nem szám karaktert szóközre cserélünk
     const cleaned = text.replace(/[^0-9]/g, " ");
+    console.log("CLEANED:", JSON.stringify(cleaned));
 
-    // 🔍 4–8 számjegy keresése
     const matches = cleaned.match(/\b\d{4,8}\b/g);
+    console.log("MATCHES:", matches);
     if (!matches || matches.length === 0) {
+        console.log("NO MATCHES → RETURN \"\"");
+        console.log("---- EXTRACT DEBUG END ----");
         return "";
     }
 
-    // 🔥 magyar telefonszám felismerése (szóhatárral!)
     const phonePattern = /\b(?:\+36|06)\s?\d{1,2}\s?\d{3}\s?\d{3,4}\b/;
-
     const isPhone = phonePattern.test(text);
+    console.log("isPhone:", isPhone);
 
-    // 🔥 végigmegyünk az összes találaton, és kiválasztjuk az első NEM telefonszám jellegűt
     for (const num of matches) {
+        console.log("CHECK NUM:", num);
 
-        if (num.length < 4 || num.length > 8) continue;
+        if (num.length < 4 || num.length > 8) {
+            console.log("  → LENGTH SKIP");
+            continue;
+        }
 
-        // ❌ ha telefonszám része → skip
-        if (isPhone && text.includes(num)) continue;
+        if (isPhone && text.includes(num)) {
+            console.log("  → PHONE PART SKIP");
+            continue;
+        }
 
+        console.log("  → RETURN NUM:", num);
+        console.log("---- EXTRACT DEBUG END ----");
         return num;
     }
 
+    console.log("NO VALID NUM → RETURN \"\"");
+    console.log("---- EXTRACT DEBUG END ----");
     return "";
 }
 
