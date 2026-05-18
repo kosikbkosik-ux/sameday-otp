@@ -38,7 +38,6 @@ function extractCode(text) {
 
     const isPhone = phonePatternNormalized.test(digitsOnly);
 
-    let best = "";
 let bestCode = "";
 
 for (const num of matches) {
