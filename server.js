@@ -74,7 +74,8 @@ function extractCode(text) {
     }
 
     // 🔥 magyar telefonszám felismerése (szóközökkel is)
-    const phonePattern = /(?:\+36|06)\s?\d{1,2}\s?\d{3}\s?\d{3,4}/;
+    const phonePattern = /\b(?:\+36|06)\s?\d{1,2}\s?\d{3}\s?\d{3,4}\b/;
+
 
     const isPhone = phonePattern.test(text);
 
