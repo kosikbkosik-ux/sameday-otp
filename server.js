@@ -95,7 +95,6 @@ function isDuplicate(code, text) {
 
 // 📩 POST
 app.post('/sms', (req, res) => {
-
     const rawText = req.body.message || req.body.text || "";
 
     console.log("RAW:", rawText);
@@ -104,12 +103,18 @@ app.post('/sms', (req, res) => {
 
     if (!code) {
         console.log("NEM OTP / SZŰRVE");
-        return res.sendStatus(200);
+        return res.json({
+            success: false,
+            reason: "filtered_or_not_otp"
+        });
     }
 
     if (isDuplicate(code, rawText)) {
         console.log("DUPLIKÁLT:", code);
-        return res.sendStatus(200);
+        return res.json({
+            success: false,
+            reason: "duplicate"
+        });
     }
 
     const msg = {
@@ -127,8 +132,12 @@ app.post('/sms', (req, res) => {
 
     console.log("ÚJ OTP:", code);
 
-    res.sendStatus(200);
+    return res.json({
+        success: true,
+        code,
+    });
 });
+
 
 // 📩 GET
 app.get('/sms', (req, res) => {
